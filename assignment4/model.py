@@ -7,7 +7,7 @@ from typing import Protocol, Tuple
 import numpy as np
 
 # set the numpy random seed so our randomness is reproducible
-np.random.seed(1)
+np.random.seed(67)
 
 
 # DON'T CHANGE THE CLASS BELOW! 
@@ -25,43 +25,20 @@ class Model(Protocol):
 
 class MajorityBaseline(Model):
     def __init__(self):
-        
-        # YOUR CODE HERE, REMOVE THE LINE BELOW
-        pass
-
-
+        print('MAJORITY BASELINE INIT')
+        self.majority_label = None
+    
     def get_hyperparams(self) -> dict:
         return {}
     
-
     def train(self, x: np.ndarray, y: np.ndarray):
-        '''
-        Train a baseline model that returns the most common label in the dataset.
-
-        Args:
-            x (np.ndarray): a 2-D np.ndarray (num_examples x num_features) with examples and their features
-            y (np.ndarray): a 1-D np.ndarray (num_examples) with the target labels corresponding to each example
-
-        Hints:
-            - If you'd rather use python lists, you can convert an np.ndarray `x` to a list with `x.tolist()`.
-        '''
-    
-        # YOUR CODE HERE
-
-
+        values, counts = np.unique(y, return_counts=True)
+        self.majority_label = values[np.argmax(counts)]
+        
     def predict(self, x: np.ndarray) -> list:
-        '''
-        Predict the labels for a dataset.
-
-        Args:
-            x (np.ndarray): a 2-D np.ndarray (num_examples x num_features) with examples and their features
-
-        Returns:
-            list: A list with the predicted labels, each corresponding to a row in `x`.
-        '''
-
-        # YOUR CODE HERE, REMOVE THE LINE BELOW
-        return []
+        if self.majority_label is None:
+            raise ValueError("Model has not been trained yet.")
+        return [self.majority_label] * len(x)
 
 
 class Perceptron(Model):
