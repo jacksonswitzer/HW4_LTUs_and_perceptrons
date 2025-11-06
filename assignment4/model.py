@@ -130,8 +130,15 @@ class AveragedPerceptron(Model):
         '''     
 
         self.lr = lr
-        
-        # YOUR CODE HERE
+        self.num_features = num_features
+
+        self.w = np.zeros(num_features)
+        self.b = 0.0
+
+        self.w_sum = np.zeros(num_features)
+        self.b_sum = 0.0
+
+        self.counter = 0
 
 
     def get_hyperparams(self) -> dict:
@@ -154,7 +161,36 @@ class AveragedPerceptron(Model):
             - Take a look at `np.matmul()` for matrix multiplication between two np.ndarray matrices.
         '''
 
-        # YOUR CODE HERE
+        '''
+        Train using the Averaged Perceptron algorithm.
+        '''
+        n_samples = x.shape[0]
+
+        for epoch in range(epochs):
+
+            x, y = shuffle_data(x, y)
+
+            for i in range(n_samples):
+                self.counter += 1
+                x_i = x[i]
+                y_i = y[i]
+
+                activation = np.dot(self.w, x_i) + self.b
+
+                # basic perceptron update
+                if y_i * activation <= 0:
+                    self.w += self.lr * y_i * x_i
+                    self.b += self.lr * y_i
+
+                # cumulative sum of weights and bias for averaging
+                self.w_sum += self.w
+                self.b_sum += self.b
+
+        # compute averages
+        self.w_avg = self.w_sum / self.counter
+        self.b_avg = self.b_sum / self.counter
+
+        return self
     
 
     def predict(self, x: np.ndarray) -> list:
@@ -168,8 +204,9 @@ class AveragedPerceptron(Model):
             list: A list with the predicted labels, each corresponding to a row in `x`.
         '''
 
-        # YOUR CODE HERE, REMOVE THE LINE BELOW
-        return []
+        activations = np.dot(x, self.w_avg) + self.b_avg
+        preds = np.where(activations >= 0, 1, -1)
+        return preds.tolist()
     
 
 class AggressivePerceptron(Model):
