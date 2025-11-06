@@ -38,11 +38,20 @@ def train_epochs(
     best_epochs = -1
     best_val_accuracy = 0
 
+    for e in range(1, epochs + 1):
+        model.train(x=train_x, y=train_y, epochs=1)
 
-    # YOUR CODE HERE
+        # validate
+        preds = model.predict(val_x)
+        val_acc = accuracy(labels=val_y.tolist(), predictions=list(preds))
+        print(f"  Epochs={e:2d}  Validation Accuracy={val_acc:.3f}")
 
+        # track best
+        if val_acc > best_val_accuracy:
+            best_val_accuracy = val_acc
+            best_epochs = e
 
-    return best_epochs, best_val_accuracy
+    return best_epochs, float(best_val_accuracy)
 
 
 

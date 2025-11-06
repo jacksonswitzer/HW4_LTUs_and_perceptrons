@@ -48,7 +48,47 @@ def cross_validation(
     best_avg_accuracy = 0
 
 
-    # YOUR CODE HERE
+    num_features = cv_folds[0].shape[1] - 1  # -1 for the label column
+
+    for lr, mu in itertools.product(lr_values, mu_values):
+        print(f"Testing hyperparameters: lr={lr}, mu={mu}")
+
+        fold_accuracies = []
+
+        # k-fold cross-validation, i is validation, others are training
+        for i in range(len(cv_folds)):
+            val_df = cv_folds[i]
+            train_dfs = [cv_folds[j] for j in range(len(cv_folds)) if j != i]
+            train_df = pd.concat(train_dfs)
+
+            train_x = train_df.drop('label', axis=1).to_numpy()
+            train_y = train_df['label'].to_numpy()
+            val_x = val_df.drop('label', axis=1).to_numpy()
+            val_y = val_df['label'].to_numpy()
+
+            model = init_perceptron(
+                variant=perceptron_variant,
+                num_features=num_features,
+                lr=lr,
+                mu=mu
+            )
+
+            model.train(x=train_x, y=train_y, epochs=epochs)
+
+            preds = model.predict(val_x)
+            fold_acc = accuracy(labels=val_y, predictions=preds)
+            fold_accuracies.append(fold_acc)
+
+            print(f"  Fold {i+1}/{len(cv_folds)}: accuracy={fold_acc:.3f}")
+
+        # compute mean accuracy for this combination of learning rate and mu
+        avg_acc = np.mean(fold_accuracies)
+        print(f"  Avg accuracy for lr={lr}, mu={mu}: {avg_acc:.3f}\n")
+
+        # update best if improved
+        if avg_acc > best_avg_accuracy:
+            best_avg_accuracy = avg_acc
+            best_hyperparams = {'lr': lr, 'mu': mu}
 
 
     return best_hyperparams, best_avg_accuracy

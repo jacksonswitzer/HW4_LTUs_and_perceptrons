@@ -59,6 +59,8 @@ class Perceptron(Model):
         # I added everything below here
         self.w = np.random.uniform(low=-0.001, high=0.001, size=num_features)
         self.b = 0.0
+        self.t = 0
+        self.num_updates = 0
 
 
     def get_hyperparams(self) -> dict:
@@ -83,14 +85,13 @@ class Perceptron(Model):
 
         n_samples = x.shape[0]
 
-        # run the udpdate rule for a number of epochs
-        for epoch in range(epochs):
+        # run the update rule for a number of epochs
+        for _ in range(epochs):
             x, y = shuffle_data(x, y)
+            lr = self.lr
 
             if self.decay_lr:
-                lr = self.lr / (1 + epoch)
-            else:
-                lr = self.lr
+                lr = self.lr / (1 + self.t)
 
             for i in range(n_samples):
                 x_i = x[i]
@@ -101,6 +102,11 @@ class Perceptron(Model):
                 if y_i * activation <= self.mu:
                     self.w = self.w + lr * y_i * x_i
                     self.b = self.b + lr * y_i
+                    self.num_updates += 1
+
+            self.t += 1
+        #uncomment line below to see how many updates a training session takes
+        print(f'Number of updates: {self.num_updates}')
     
 
     def predict(self, x: np.ndarray) -> list:
@@ -139,6 +145,7 @@ class AveragedPerceptron(Model):
         self.b_sum = 0.0
 
         self.counter = 0
+        self.num_updates = 0
 
 
     def get_hyperparams(self) -> dict:
@@ -166,8 +173,7 @@ class AveragedPerceptron(Model):
         '''
         n_samples = x.shape[0]
 
-        for epoch in range(epochs):
-
+        for _ in range(epochs):
             x, y = shuffle_data(x, y)
 
             for i in range(n_samples):
@@ -181,6 +187,7 @@ class AveragedPerceptron(Model):
                 if y_i * activation <= 0:
                     self.w += self.lr * y_i * x_i
                     self.b += self.lr * y_i
+                    self.num_updates += 1
 
                 # cumulative sum of weights and bias for averaging
                 self.w_sum += self.w
@@ -189,8 +196,7 @@ class AveragedPerceptron(Model):
         # compute averages
         self.w_avg = self.w_sum / self.counter
         self.b_avg = self.b_sum / self.counter
-
-        return self
+        print(f'Number of updates: {self.num_updates}')
     
 
     def predict(self, x: np.ndarray) -> list:
