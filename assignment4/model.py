@@ -85,9 +85,7 @@ class Perceptron(Model):
 
         # run the udpdate rule for a number of epochs
         for epoch in range(epochs):
-            print(f"Epoch {epoch + 1}/{epochs}")
-
-            x_this_epoch, y_this_epoch = shuffle_data(x, y)
+            x, y = shuffle_data(x, y)
 
             if self.decay_lr:
                 lr = self.lr / (1 + epoch)
