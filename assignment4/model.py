@@ -51,13 +51,14 @@ class Perceptron(Model):
             lr (float): the learning rate (eta). This is also the initial learning rate if decay_lr=True
             decay_lr (bool): whether or not to decay the initial learning rate lr
             mu (float): the margin (mu) that determines the threshold for a mistake. Defaults to 0
-        '''     
-
+        '''
+        self.num_features = num_features #I added this, don't know why it wasn't included with the other three
         self.lr = lr
         self.decay_lr = decay_lr
         self.mu = mu
-
-        # YOUR CODE HERE
+        # I added everything below here
+        self.w = np.random.uniform(low=-0.001, high=0.001, size=num_features)
+        self.b = 0.0
 
 
     def get_hyperparams(self) -> dict:
@@ -80,7 +81,28 @@ class Perceptron(Model):
             - Take a look at `np.matmul()` for matrix multiplication between two np.ndarray matrices.
         '''
 
-        # YOUR CODE HERE
+        n_samples = x.shape[0]
+
+        # run the udpdate rule for a number of epochs
+        for epoch in range(epochs):
+            print(f"Epoch {epoch + 1}/{epochs}")
+
+            x_this_epoch, y_this_epoch = shuffle_data(x, y)
+
+            if self.decay_lr:
+                lr = self.lr / (1 + epoch)
+            else:
+                lr = self.lr
+
+            for i in range(n_samples):
+                x_i = x[i]
+                y_i = y[i]
+
+                activation = np.dot(self.w, x_i) + self.b
+
+                if y_i * activation <= self.mu:
+                    self.w = self.w + lr * y_i * x_i
+                    self.b = self.b + lr * y_i
     
 
     def predict(self, x: np.ndarray) -> list:
@@ -94,8 +116,9 @@ class Perceptron(Model):
             list: A list with the predicted labels, each corresponding to a row in `x`.
         '''
 
-        # YOUR CODE HERE, REMOVE THE LINE BELOW
-        return []
+        activations = np.dot(x, self.w) + self.b
+        preds = np.where(activations >= 0, 1, -1)
+        return preds.tolist()
     
 
 class AveragedPerceptron(Model):
